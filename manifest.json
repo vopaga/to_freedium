@@ -3,6 +3,7 @@
     "name": "To Freedium",
     "version": "0.1.0",
     "description": "Redirect Medium and selected publication domains to a Freedium-compatible mirror.",
+    "author": "Alexandr Agapov",
     "permissions": [
         "activeTab",
         "declarativeNetRequestWithHostAccess",
