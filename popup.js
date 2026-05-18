@@ -17,8 +17,11 @@ const elements = {
     openCurrentButton: document.getElementById("open-current-button"),
     openUrlButton: document.getElementById("open-url-button"),
     presetList: document.getElementById("preset-list"),
-    feedback: document.getElementById("feedback")
+    feedback: document.getElementById("feedback"),
+    versionLabel: document.getElementById("version-label")
 };
+
+elements.versionLabel.textContent = `v${browser.runtime.getManifest().version}`;
 
 let appState = {
     settings: null,

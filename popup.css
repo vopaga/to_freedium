@@ -225,6 +225,35 @@ h2 {
     color: var(--accent);
 }
 
+.footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.footer-sep {
+    color: var(--muted);
+    opacity: 0.5;
+}
+
+.footer-link {
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+    outline: none;
+}
+
 @media (max-width: 420px) {
     body {
         min-width: 320px;
