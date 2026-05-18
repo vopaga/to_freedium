@@ -88,10 +88,15 @@ Redirect behavior:
 
 - the extension extracts the Medium-style article ID from the URL
 - it redirects to `<mirror-base-url><article-id>`
-- the default mirror is `https://freedium-mirror.cfd/`
-- the user can replace this with a self-hosted compatible mirror
+- the default mirror is `https://freedium-mirror.cfd/`, a community-run
+  Freedium-compatible service; the historical `freedium.cfd` host was
+  no longer reachable at the time of this release
+- the project is not affiliated with either service and the user can
+  replace the default with any other mirror, including a self-hosted one
 - templates may use `{id}` and `{url}` placeholders for self-hosted variants with a different route shape
 - `{url}` receives a canonical article URL without extra query strings or fragments
+- backslashes and unknown `{placeholders}` are rejected so the mirror
+  template cannot inject DNR regex backreferences
 - unsupported standalone Medium-style domains are handled only through explicit manual-open actions, not automatic all-sites interception
 - on Firefox for Android, manual-open is exposed through the popup because extension context menus are not supported there
 - the internal redirect bridge is web-accessible only from supported source domains and validates a per-install token before it will forward the tab

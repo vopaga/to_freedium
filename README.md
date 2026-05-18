@@ -2,6 +2,14 @@
 
 Firefox extension that redirects Medium links to a Freedium-compatible mirror.
 
+## Default mirror
+
+The default mirror is `https://freedium-mirror.cfd/`, a community-run
+Freedium-compatible service. The historical `freedium.cfd` is no longer
+reachable at the time of this release, and this project is not affiliated
+with either service. You can replace the default with any other mirror,
+including a self-hosted one, from the popup at any time.
+
 ## Features
 
 - Works in Firefox on desktop and Android.
@@ -64,4 +72,9 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 
 ## Validation
 
-- Run `pwsh -File tests/validate.ps1` from the repository root to validate URL extraction and mirror template behavior.
+- Run `pwsh -File tests/validate.ps1` from the repository root to validate URL extraction and mirror template behavior. PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
+- Run `npx web-ext lint` to validate the manifest against Mozilla's add-ons linter.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and the manual testing checklist. Security issues should follow [SECURITY.md](SECURITY.md).
