@@ -62,7 +62,10 @@ function normalizeMirrorBaseUrl(value) {
   if (invalidToken) {
     throw new Error("Only {id} and {url} placeholders are supported.");
   }
-  return input;
+  if (input.includes("{") || input.includes("}")) {
+    return input;
+  }
+  return url.toString();
 }
 
 function toOriginPattern(hostname) {

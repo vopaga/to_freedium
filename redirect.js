@@ -22,7 +22,10 @@ function normalizeMirrorTemplate(value) {
   if (!["https:", "http:"].includes(url.protocol)) {
     throw new Error("Invalid mirror template protocol.");
   }
-  return input;
+  if (input.includes("{") || input.includes("}")) {
+    return input;
+  }
+  return url.toString();
 }
 
 async function getMirrorTemplate() {

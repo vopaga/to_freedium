@@ -44,8 +44,9 @@ function normalizeMirrorTemplate(value) {
     if (invalidToken) {
       throw new Error("Only {id} and {url} placeholders are supported.");
     }
+    return candidate;
   }
-  return candidate;
+  return url.toString();
 }
 
 function normalizeDomainEntry(value) {
