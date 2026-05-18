@@ -8,7 +8,7 @@ importScripts("mirror-template.js");
 
 const STORAGE_KEY = "settings";
 const RULE_ID_BASE = 1000;
-const { DEFAULT_MIRROR, normalizeMirrorTemplate } = globalThis.toFreediumMirror;
+const { DEFAULT_MIRROR, canonicalHost, normalizeMirrorTemplate } = globalThis.toFreediumMirror;
 const PUBLICATIONS_PATH = "data/publications.json";
 const DEFAULT_SETTINGS = {
   enabled: true,
@@ -19,10 +19,6 @@ const DEFAULT_SETTINGS = {
 const MEDIUM_HOST_REGEX = "(?:[a-z0-9-]+\\.)*medium\\.com";
 const ARTICLE_PATH_REGEX = "([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$";
 let builtinPublicationsPromise;
-
-function canonicalHost(hostname) {
-  return String(hostname || "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
-}
 
 function normalizeDomainEntry(value) {
   const input = canonicalHost(value);
@@ -85,25 +81,40 @@ async function getBuiltinPublicationHosts() {
   return publications.map((entry) => entry.host);
 }
 
-async function getCuratedPublicationHosts() {
+async function getManagedPublicationHosts() {
   return getBuiltinPublicationHosts();
+}
+
+async function getManagedMirrorHosts() {
+  const publicationHosts = await getManagedPublicationHosts();
+  return ["medium.com", ...publicationHosts];
 }
 
 async function getStoredSettings() {
   const stored = await browser.storage.local.get(STORAGE_KEY);
   const persisted = stored[STORAGE_KEY] || {};
+  const blockedHosts = await getManagedMirrorHosts();
+  let mirrorTemplate = DEFAULT_MIRROR;
+
+  try {
+    mirrorTemplate = normalizeMirrorTemplate(persisted.mirrorTemplate, { blockedHosts });
+  } catch (error) {
+    console.warn("Stored mirror template was invalid. Falling back to the default mirror.", error);
+  }
+
   return {
     ...DEFAULT_SETTINGS,
     ...persisted,
-    mirrorTemplate: normalizeMirrorTemplate(persisted.mirrorTemplate),
+    mirrorTemplate,
   };
 }
 
 async function saveSettings(settings) {
   const allowedPresetHosts = new Set(await getBuiltinPublicationHosts());
+  const blockedHosts = await getManagedMirrorHosts();
   const sanitized = {
     enabled: Boolean(settings.enabled),
-    mirrorTemplate: normalizeMirrorTemplate(settings.mirrorTemplate),
+    mirrorTemplate: normalizeMirrorTemplate(settings.mirrorTemplate, { blockedHosts }),
     enabledPresetDomains: Array.from(new Set((settings.enabledPresetDomains || []).map(normalizeDomainEntry)))
       .filter((hostname) => allowedPresetHosts.has(hostname))
       .sort(),
@@ -180,10 +191,10 @@ async function pruneDomainsWithoutPermission(removedOrigins) {
 
   const settings = await getStoredSettings();
   const shouldRemoveDomain = (hostname) => removedOrigins.includes(toOriginPattern(hostname));
-  const curatedPublicationHosts = await getCuratedPublicationHosts();
+  const manageablePublicationHosts = await getManagedPublicationHosts();
 
   const nextPresetDomains = settings.enabledPresetDomains.filter((hostname) => {
-    if (!curatedPublicationHosts.includes(hostname)) {
+    if (!manageablePublicationHosts.includes(hostname)) {
       return true;
     }
     return !shouldRemoveDomain(hostname);

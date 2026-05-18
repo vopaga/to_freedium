@@ -34,11 +34,19 @@ $invalidTemplateCases = @(
   'https://mirror.example/{id}/{url}/{extra}'
 )
 
+$blockedMirrorUrls = @(
+  'https://medium.com/',
+  'https://sub.medium.com/',
+  'https://towardsdatascience.com/read?url={url}',
+  'https://levelup.gitconnected.com/{id}'
+)
+
 $manifest = Get-Content -Raw c:\projects\to_freedium\manifest.json | ConvertFrom-Json
 $publicationData = Get-Content -Raw c:\projects\to_freedium\data\publications.json | ConvertFrom-Json
 
 $expectedOptionalOrigins = $publicationData | ForEach-Object { "*://$($_.host)/*" }
 $expectedWerOrigins = @('*://medium.com/*', '*://*.medium.com/*') + $expectedOptionalOrigins
+$expectedWerResources = @('mirror-template.js', 'redirect.html', 'redirect.js')
 
 if ((@($manifest.optional_host_permissions) -join "`n") -ne ($expectedOptionalOrigins -join "`n")) {
   throw 'optional_host_permissions is out of sync with data/publications.json'
@@ -47,6 +55,11 @@ if ((@($manifest.optional_host_permissions) -join "`n") -ne ($expectedOptionalOr
 $werOrigins = @($manifest.web_accessible_resources[0].matches)
 if ((@($werOrigins) -join "`n") -ne ($expectedWerOrigins -join "`n")) {
   throw 'web_accessible_resources matches are out of sync with supported domains'
+}
+
+$werResources = @($manifest.web_accessible_resources[0].resources)
+if ((@($werResources) -join "`n") -ne ($expectedWerResources -join "`n")) {
+  throw 'web_accessible_resources resources are out of sync with redirect bridge assets'
 }
 
 foreach ($case in $templateCases) {
@@ -66,6 +79,21 @@ foreach ($template in $invalidTemplateCases) {
     continue
   }
   throw "Invalid template validation regex did not reject '$template'"
+}
+
+$managedMirrorHosts = @('medium.com') + ($publicationData | ForEach-Object { $_.host })
+foreach ($mirrorUrl in $blockedMirrorUrls) {
+  $mirrorHost = ([System.Uri]$mirrorUrl.Replace('{id}', 'example-id').Replace('{url}', 'https%3A%2F%2Fmedium.com%2Fexample-id')).Host.ToLowerInvariant()
+  $matchesManagedSource = $false
+  foreach ($managedHost in $managedMirrorHosts) {
+    if ($mirrorHost -eq $managedHost -or $mirrorHost.EndsWith(".$managedHost")) {
+      $matchesManagedSource = $true
+      break
+    }
+  }
+  if (-not $matchesManagedSource) {
+    throw "Blocked mirror URL validation did not reject '$mirrorUrl'"
+  }
 }
 
 Write-Host 'Validation passed.'

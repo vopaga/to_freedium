@@ -21,10 +21,25 @@ function fillTemplate(template, values) {
     .replaceAll("{url}", encodeURIComponent(values.url));
 }
 
+function permissionPatternToHost(originPattern) {
+  const match = String(originPattern || "").match(/^\*:\/\/([^/]+)\/\*$/);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function getManagedMirrorHosts() {
+  const manifest = browser.runtime.getManifest();
+  const publicationHosts = (manifest.optional_host_permissions || [])
+    .map(permissionPatternToHost)
+    .filter(Boolean);
+  return ["medium.com", ...publicationHosts];
+}
+
 async function getMirrorTemplate() {
   const stored = await browser.storage.local.get(STORAGE_KEY);
   const settings = stored[STORAGE_KEY] || {};
-  return normalizeMirrorTemplate(settings.mirrorTemplate || DEFAULT_MIRROR);
+  return normalizeMirrorTemplate(settings.mirrorTemplate || DEFAULT_MIRROR, {
+    blockedHosts: getManagedMirrorHosts()
+  });
 }
 
 function showFailure(message, originalUrl) {

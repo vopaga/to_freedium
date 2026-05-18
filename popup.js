@@ -22,6 +22,10 @@ let appState = {
   grantedOrigins: []
 };
 
+function getManagedMirrorHosts() {
+  return ["medium.com", ...(appState.builtinPublications || []).map((publication) => publication.host)];
+}
+
 function setControlsDisabled(disabled) {
   elements.toggleButton.disabled = disabled;
   elements.mirrorInput.disabled = disabled;
@@ -168,7 +172,9 @@ elements.toggleButton.addEventListener("click", async () => {
 
 elements.saveMirrorButton.addEventListener("click", async () => {
   try {
-    const mirrorTemplate = normalizeMirrorTemplate(elements.mirrorInput.value);
+    const mirrorTemplate = normalizeMirrorTemplate(elements.mirrorInput.value, {
+      blockedHosts: getManagedMirrorHosts()
+    });
     await saveSettings({ mirrorTemplate });
     setFeedback("Mirror setting updated.", "success");
   } catch (error) {

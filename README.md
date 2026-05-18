@@ -26,6 +26,7 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 - For Medium-style article URLs, the extension extracts the article ID and reconstructs the original article URL through an internal redirect bridge page.
 - If the configured mirror setting is a plain base URL, the extension redirects to `<mirror-base-url><article-id>`.
 - If the configured mirror setting contains `{id}` and/or `{url}`, those placeholders are filled before the final redirect.
+- Mirror settings that point back to `medium.com` or the supported publication domains are rejected to prevent redirect loops.
 - If redirect preparation fails, the bridge page now shows an error and a fallback link to the original article instead of silently hanging.
 
 ## Development
