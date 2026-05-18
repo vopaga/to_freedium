@@ -98,6 +98,18 @@ No browsing history is uploaded or synced by the extension.
 Full version of this policy and its history: https://github.com/vopaga/to_freedium/blob/main/PRIVACY.md
 ```
 
+## Suggested Screenshot Captions
+
+AMO asks for a short caption for each screenshot. Keep them under 250
+characters, active voice, B2 English. Captions used for the v1.0.x
+listing:
+
+| Screenshot | Caption |
+|---|---|
+| Medium article with paywall blocker, popup open, redirect **disabled** | `A Medium article hidden behind a paywall, with the popup open and the redirect turned off.` |
+| Same article on `freedium-mirror.cfd` in plain HTML, popup open, redirect **enabled** | `The same article opens on a Freedium-compatible mirror in plain HTML once the redirect is turned on.` |
+| (optional) Popup detail shot | `The toolbar popup. Toggle the redirect, change the mirror URL or template, enable extra publication domains.` |
+
 ## Reviewer Notes
 
 This extension redirects only top-level navigations for Medium-style article URLs.
