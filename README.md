@@ -9,11 +9,16 @@ Firefox extension that redirects Medium links to a Freedium-compatible mirror.
 - Lets the user switch the redirect on and off from the popup.
 - Lets the user set either a custom mirror URL or a mirror template with `{id}` and `{url}` placeholders.
 - Lets the user enable a curated list of built-in publication domains one by one.
+- Lets the user manually open unsupported Medium-style article URLs through the mirror from the popup.
+- Adds a desktop context-menu action for opening the current page or a clicked link through the mirror.
 - Requests access to each extra publication domain only when the user explicitly enables it.
 
 ## Permissions model
 
 - `declarativeNetRequestWithHostAccess`: used to register redirect rules without the broader install warning shown by `declarativeNetRequest`.
+- `activeTab`: used only when the user explicitly asks the extension to open the current page through the mirror.
+- `scripting`: used with `activeTab` to read the current tab URL after explicit user action.
+- `menus`: used to add desktop context-menu actions for manual opening.
 - `storage`: used to persist the enabled state, custom mirror setting, and enabled publication presets.
 - `host_permissions` for `medium.com` and `*.medium.com`: needed for the built-in redirect behavior.
 - `optional_host_permissions` for runtime domain grants: used for the curated publication list.
@@ -23,22 +28,26 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 ## Redirect behavior
 
 - The redirect rule is limited to top-level navigations.
-- For Medium-style article URLs, the extension extracts the article ID and reconstructs the original article URL through an internal redirect bridge page.
+- For automatic redirects, the extension only watches `medium.com`, `*.medium.com`, and explicitly enabled curated publication domains.
+- For Medium-style article URLs, the extension extracts the article ID and reconstructs the original article URL through an internal redirect bridge page when needed.
 - If the configured mirror setting is a plain base URL, the extension redirects to `<mirror-base-url><article-id>`.
 - If the configured mirror setting contains `{id}` and/or `{url}`, those placeholders are filled before the final redirect.
 - Mirror settings that point back to `medium.com` or the supported publication domains are rejected to prevent redirect loops.
 - If redirect preparation fails, the bridge page now shows an error and a fallback link to the original article instead of silently hanging.
+- Unsupported standalone domains such as `generativeai.pub` are not auto-captured, but they can be opened manually through the popup on desktop and Android, and through the desktop context menu.
 
 ## Development
 
 1. Open `about:debugging#/runtime/this-firefox` in Firefox desktop.
 2. Choose `Load Temporary Add-on`.
 3. Select `manifest.json` from this repository.
-4. Open the extension popup and test the toggle, custom mirror URL, and curated publication domains.
+4. Open the extension popup and test the toggle, custom mirror URL, curated publication domains, and manual-open actions.
 
 ## Android notes
 
 - The popup is exposed through the Firefox Android Add-ons menu.
+- Firefox for Android does not support extension context menus, so the popup is the manual-open entry point there.
+- After a successful manual-open action, the popup closes so Firefox can reveal the destination page.
 - Publication permission prompts should be tested on-device because the runtime flow differs from desktop UX.
 
 ## Packaging and AMO

@@ -1,70 +1,70 @@
 {
-  "manifest_version": 3,
-  "name": "To Freedium",
-  "version": "0.1.0",
-  "description": "Redirect Medium and selected publication domains to a Freedium-compatible mirror.",
-  "permissions": [
-    "declarativeNetRequestWithHostAccess",
-    "storage"
-  ],
-  "host_permissions": [
-    "*://medium.com/*",
-    "*://*.medium.com/*"
-  ],
-  "optional_host_permissions": [
-    "*://towardsdatascience.com/*",
-    "*://betterprogramming.pub/*",
-    "*://uxdesign.cc/*",
-    "*://levelup.gitconnected.com/*",
-    "*://betterhumans.pub/*"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "bootstrap",
-        "enabled": true,
-        "path": "rules/empty.json"
-      }
-    ]
-  },
-  "action": {
-    "default_title": "To Freedium",
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon.svg",
-      "32": "icons/icon.svg",
-      "48": "icons/icon.svg"
-    }
-  },
-  "icons": {
-    "48": "icons/icon.svg",
-    "96": "icons/icon.svg"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "mirror-template.js",
-        "redirect.html",
-        "redirect.js"
-      ],
-      "matches": [
+    "manifest_version": 3,
+    "name": "To Freedium",
+    "version": "0.1.0",
+    "description": "Redirect Medium and selected publication domains to a Freedium-compatible mirror.",
+    "permissions": [
+        "activeTab",
+        "declarativeNetRequestWithHostAccess",
+        "menus",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
         "*://medium.com/*",
-        "*://*.medium.com/*",
+        "*://*.medium.com/*"
+    ],
+    "optional_host_permissions": [
         "*://towardsdatascience.com/*",
         "*://betterprogramming.pub/*",
         "*://uxdesign.cc/*",
         "*://levelup.gitconnected.com/*",
         "*://betterhumans.pub/*"
-      ]
+    ],
+    "background": {
+        "scripts": [
+            "mirror-template.js",
+            "background.js"
+        ]
+    },
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "bootstrap",
+                "enabled": true,
+                "path": "rules/empty.json"
+            }
+        ]
+    },
+    "action": {
+        "default_title": "To Freedium",
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon.svg",
+            "32": "icons/icon.svg",
+            "48": "icons/icon.svg"
+        }
+    },
+    "icons": {
+        "48": "icons/icon.svg",
+        "96": "icons/icon.svg"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "mirror-template.js",
+                "redirect.html",
+                "redirect.js"
+            ],
+            "matches": [
+                "*://*/*"
+            ]
+        }
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{3f1bbfd0-9fe5-4d80-9c4f-19c89f6ee7b2}",
+            "strict_min_version": "128.0"
+        }
     }
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{3f1bbfd0-9fe5-4d80-9c4f-19c89f6ee7b2}",
-      "strict_min_version": "128.0"
-    }
-  }
 }

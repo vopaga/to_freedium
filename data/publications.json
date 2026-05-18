@@ -1,27 +1,27 @@
 [
-  {
-    "id": "towards-data-science",
-    "host": "towardsdatascience.com",
-    "label": "Towards Data Science"
-  },
-  {
-    "id": "better-programming",
-    "host": "betterprogramming.pub",
-    "label": "Better Programming"
-  },
-  {
-    "id": "ux-collective",
-    "host": "uxdesign.cc",
-    "label": "UX Collective"
-  },
-  {
-    "id": "level-up",
-    "host": "levelup.gitconnected.com",
-    "label": "Level Up Coding"
-  },
-  {
-    "id": "better-humans",
-    "host": "betterhumans.pub",
-    "label": "Better Humans"
-  }
+    {
+        "id": "towards-data-science",
+        "host": "towardsdatascience.com",
+        "label": "Towards Data Science"
+    },
+    {
+        "id": "better-programming",
+        "host": "betterprogramming.pub",
+        "label": "Better Programming"
+    },
+    {
+        "id": "ux-collective",
+        "host": "uxdesign.cc",
+        "label": "UX Collective"
+    },
+    {
+        "id": "level-up",
+        "host": "levelup.gitconnected.com",
+        "label": "Level Up Coding"
+    },
+    {
+        "id": "better-humans",
+        "host": "betterhumans.pub",
+        "label": "Better Humans"
+    }
 ]

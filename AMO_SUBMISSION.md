@@ -17,6 +17,8 @@ To Freedium redirects supported Medium article links to a Freedium-compatible mi
 What it does:
 
 - redirects top-level navigation on `medium.com` and supported Medium publication domains
+- lets the user manually open unsupported Medium-style article URLs through the popup on desktop and Android
+- adds desktop context-menu actions to open the current page or a clicked link through the mirror
 - lets the user turn redirects on or off from the popup
 - lets the user choose a custom mirror URL or mirror template
 - lets the user enable extra publication domains from a curated list, one by one
@@ -31,6 +33,8 @@ What it does not do:
 
 Permission model:
 
+- `activeTab` and `scripting` are used only after explicit user action to open the current page through the mirror
+- `menus` is used only to add desktop context-menu actions for manual opening
 - base host access is limited to `medium.com` and `*.medium.com`
 - curated publication domains are requested only when the user explicitly enables them from the popup
 - settings are stored with the `storage` API
@@ -73,7 +77,9 @@ Architecture summary:
 
 Permissions summary:
 
+- `activeTab` and `scripting` are used only for the explicit manual-open action from the popup
 - `declarativeNetRequestWithHostAccess` is used for redirect rules without the broader install warning of `declarativeNetRequest`
+- `menus` is used to expose desktop context-menu actions for manual opening
 - `storage` is used only to persist user settings
 - `host_permissions` are limited to `medium.com` and `*.medium.com` for built-in behavior
 - curated publication domains are requested via runtime permission prompt only after explicit user action in the popup
@@ -85,6 +91,8 @@ Redirect behavior:
 - the default mirror is `https://freedium-mirror.cfd/`
 - the user can replace this with a self-hosted compatible mirror
 - templates may use `{id}` and `{url}` placeholders for self-hosted variants with a different route shape
+- unsupported standalone Medium-style domains are handled only through explicit manual-open actions, not automatic all-sites interception
+- on Firefox for Android, manual-open is exposed through the popup because extension context menus are not supported there
 
 Data handling:
 
@@ -96,6 +104,7 @@ Known reviewer-sensitive areas:
 
 - `optional_host_permissions` is limited to the curated publication domain list shipped with the extension
 - granted runtime access is still requested one host at a time in response to a user action
+- the extension does not request broad all-sites host access for unsupported domains; those are handled only through explicit manual-open actions
 - a minimal static empty DNR ruleset is included as a Firefox compatibility workaround so dynamic rules restore more reliably after restart
 
 ## Packaging
@@ -104,9 +113,12 @@ From the repository root, package these files into the upload archive:
 
 - `manifest.json`
 - `background.js`
+- `mirror-template.js`
 - `popup.html`
 - `popup.css`
 - `popup.js`
+- `redirect.html`
+- `redirect.js`
 - `rules/empty.json`
 - `icons/icon.svg`
 - `data/publications.json`
