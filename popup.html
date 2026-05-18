@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>To Freedium</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Medium redirect</p>
+      <h1>To Freedium</h1>
+      <p class="summary">Redirect supported Medium-style links to your chosen mirror.</p>
+      <div class="status-row">
+        <span id="status-badge" class="status-badge">Disabled</span>
+        <button id="toggle-button" class="toggle-button" type="button">Turn on</button>
+      </div>
+      <p id="status-copy" class="status-copy"></p>
+    </section>
+
+    <section class="panel">
+      <label class="field-label" for="mirror-url">Mirror base URL</label>
+      <input id="mirror-url" class="text-input" type="url" placeholder="https://freedium-mirror.cfd/" spellcheck="false">
+      <p class="hint">Use a base URL only, for example https://freedium-mirror.cfd/</p>
+      <button id="save-mirror-button" class="secondary-button" type="button">Save mirror URL</button>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Publication presets</h2>
+        <p>Enable extra domains one by one.</p>
+      </div>
+      <div id="preset-list" class="preset-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Custom domains</h2>
+        <p>Add exact hostnames such as towardsdatascience.com</p>
+      </div>
+      <div class="add-domain-row">
+        <input id="custom-domain-input" class="text-input" type="text" placeholder="publication.example.com" spellcheck="false">
+        <button id="add-domain-button" class="secondary-button" type="button">Add</button>
+      </div>
+      <div id="custom-domain-list" class="domain-list"></div>
+    </section>
+
+    <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

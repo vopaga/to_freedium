@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "To Freedium",
+  "version": "0.1.0",
+  "description": "Redirect Medium and selected publication domains to a Freedium-compatible mirror.",
+  "permissions": [
+    "declarativeNetRequestWithHostAccess",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://medium.com/*",
+    "*://*.medium.com/*"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "optional_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "bootstrap",
+        "enabled": true,
+        "path": "rules/empty.json"
+      }
+    ]
+  },
+  "action": {
+    "default_title": "To Freedium",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg",
+      "48": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "to-freedium@alexa.local",
+      "strict_min_version": "128.0"
+    }
+  }
+}
