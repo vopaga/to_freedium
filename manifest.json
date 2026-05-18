@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "To Freedium",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Redirect Medium and selected publication domains to a Freedium-compatible mirror.",
     "author": "Alexandr Agapov",
     "homepage_url": "https://github.com/vopaga/to_freedium",
@@ -73,10 +73,13 @@
     "browser_specific_settings": {
         "gecko": {
             "id": "{3f1bbfd0-9fe5-4d80-9c4f-19c89f6ee7b2}",
-            "strict_min_version": "128.0",
+            "strict_min_version": "140.0",
             "data_collection_permissions": {
                 "required": ["none"]
             }
+        },
+        "gecko_android": {
+            "strict_min_version": "142.0"
         }
     }
 }
