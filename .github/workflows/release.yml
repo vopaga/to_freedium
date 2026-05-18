@@ -62,3 +62,26 @@ jobs:
             web-ext-artifacts/SHA256SUMS \
             --title "$tag" \
             --generate-notes
+
+      # Uploads the same zip to AMO as a new version of the existing listed
+      # add-on. The very first AMO submission has to be done manually through
+      # the developer hub web form; once the listing exists, every subsequent
+      # tag push will hit this step. The step skips itself if the secrets
+      # are missing and `continue-on-error` makes any upload failure
+      # non-fatal so the GitHub Release still publishes.
+      - name: Upload version to AMO
+        continue-on-error: true
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          if [ -z "$WEB_EXT_API_KEY" ] || [ -z "$WEB_EXT_API_SECRET" ]; then
+            echo "AMO_API_KEY / AMO_API_SECRET not configured; skipping AMO upload."
+            exit 0
+          fi
+          npx --yes web-ext sign \
+            --channel=listed \
+            --api-key="$WEB_EXT_API_KEY" \
+            --api-secret="$WEB_EXT_API_SECRET" \
+            --source-dir=. \
+            --artifacts-dir=web-ext-artifacts

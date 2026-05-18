@@ -107,8 +107,20 @@ To cut a release:
    - Build the extension with `web-ext build`.
    - Compute `SHA256SUMS` for the produced zip.
    - Create a GitHub Release with auto-generated notes and attach both files.
+   - Upload the same zip to AMO as a new version of the listed add-on, if AMO API credentials are configured in repository secrets.
 
 The same workflow can be triggered from the Actions tab on GitHub by selecting **Release** and supplying an existing tag.
+
+### AMO auto-upload
+
+The first AMO submission has to be done manually through the [developer hub](https://addons.mozilla.org/developers/) — the web form is the only way to create a listing (name, description, screenshots, categories, privacy policy). Once the listing exists, every subsequent tag push can upload the new version automatically.
+
+To enable that, add two repository secrets at **Settings → Secrets and variables → Actions**:
+
+- `AMO_API_KEY` — JWT issuer from https://addons.mozilla.org/developers/addon/api/key/
+- `AMO_API_SECRET` — JWT secret from the same page
+
+The release workflow detects whether both are present and only then runs `web-ext sign --channel=listed`, which uploads the build to AMO and queues it for review. If the secrets are missing the step prints a skip message and the release still finishes normally. Upload failures (network error, AMO rejecting the version) do not fail the workflow either: the GitHub Release is the source of truth.
 
 ## Security
 
