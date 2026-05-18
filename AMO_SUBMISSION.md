@@ -60,7 +60,9 @@ https://github.com/vopaga/to_freedium/issues
 
 ## Suggested Support Email
 
-Optional. The GitHub issue tracker above is the primary support channel.
+Leave blank. AMO requires either a Support URL or a Support Email; the
+Support URL above already satisfies that. Add an address here only if
+you want a second public channel.
 
 ## Reviewer Notes
 
