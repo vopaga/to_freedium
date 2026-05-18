@@ -116,20 +116,8 @@ Known reviewer-sensitive areas:
 
 ## Packaging
 
-From the repository root, package these files into the upload archive:
+The upload archive is built by `.github/workflows/release.yml` via `web-ext build` and the ignore list in `web-ext-config.cjs`. The same zip is published to the GitHub Releases page alongside a `SHA256SUMS` file. Download the zip from the matching release and upload it to AMO.
 
-- `manifest.json`
-- `background.js`
-- `mirror-template.js`
-- `popup.html`
-- `popup.css`
-- `popup.js`
-- `redirect.html`
-- `redirect.js`
-- `rules/empty.json`
-- `icons/icon.svg`
-- `data/publications.json`
-
-Also include the documentation files in your source package if AMO asks for one.
+If AMO asks for a separate source upload, supply a zip of the full Git tree at the tagged commit (including `tests/`, `.github/`, and the documentation files).
 
 The project license is in [LICENSE](LICENSE).

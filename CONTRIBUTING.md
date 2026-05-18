@@ -74,6 +74,30 @@ PowerShell 7+ is available cross-platform via [the official installers](https://
 - Include the manual testing notes you performed.
 - Update `README.md`, `PRIVACY.md`, `AMO_SUBMISSION.md`, and `data/publications.json` whenever your change affects user-visible behavior, permissions, or supported domains.
 
+## Releasing
+
+Releases are produced by `.github/workflows/release.yml`, which fires on any tag matching `v*` and can also be triggered manually with `workflow_dispatch`.
+
+To cut a release:
+
+1. Bump `manifest.json` `version` to the target version (e.g. `1.0.0`).
+2. Commit the bump and push it to `main`.
+3. Tag the commit and push the tag:
+
+   ```sh
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+4. The release workflow will:
+   - Re-run all tests and `web-ext lint`.
+   - Refuse to publish if `manifest.json` version does not match the tag.
+   - Build the extension with `web-ext build`.
+   - Compute `SHA256SUMS` for the produced zip.
+   - Create a GitHub Release with auto-generated notes and attach both files.
+
+The same workflow can be triggered from the Actions tab on GitHub by selecting **Release** and supplying an existing tag.
+
 ## Security
 
 If you think you have found a vulnerability, do not open a public issue. See [SECURITY.md](SECURITY.md) instead.

@@ -6,6 +6,15 @@ Source: https://github.com/vopaga/to_freedium
 
 Issues: https://github.com/vopaga/to_freedium/issues
 
+## Install
+
+- **From AMO**: planned. Once listed, the add-on will install with a single click on Firefox desktop and Android.
+- **From GitHub Releases**: the [Releases](https://github.com/vopaga/to_freedium/releases) page hosts a signed-ready `.zip` and a `SHA256SUMS` file for each tagged version. The zip is the same artifact that gets submitted to AMO and is what you would load as a temporary add-on via `about:debugging#/runtime/this-firefox` for local testing. Verify the checksum before installing:
+
+  ```sh
+  sha256sum -c SHA256SUMS
+  ```
+
 ## Default mirror
 
 The default mirror is `https://freedium-mirror.cfd/`, a community-run

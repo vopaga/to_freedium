@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.0.0). Must already exist on the default branch."
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Verify manifest version matches tag
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          expected="${tag#v}"
+          actual=$(node -e "console.log(require('./manifest.json').version)")
+          if [ "$expected" != "$actual" ]; then
+            echo "Tag $tag implies version $expected, but manifest.json declares $actual." >&2
+            exit 1
+          fi
+
+      - name: Run Node unit tests
+        run: node --test
+
+      - name: Run PowerShell validation
+        shell: pwsh
+        run: pwsh -File tests/validate.ps1
+
+      - name: Run web-ext lint
+        run: npx --yes web-ext lint
+
+      - name: Build extension zip
+        run: npx --yes web-ext build --overwrite-dest
+
+      - name: Compute SHA256 checksum
+        working-directory: web-ext-artifacts
+        run: sha256sum *.zip > SHA256SUMS
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          gh release create "$tag" \
+            web-ext-artifacts/*.zip \
+            web-ext-artifacts/SHA256SUMS \
+            --title "$tag" \
+            --generate-notes
