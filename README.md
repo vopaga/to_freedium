@@ -2,7 +2,7 @@
 
 Firefox extension that redirects Medium article links to a Freedium-compatible mirror so you can read paywalled articles in plain HTML. Works on Firefox desktop and Firefox for Android.
 
-[Source](https://github.com/vopaga/to_freedium) · [Issues](https://github.com/vopaga/to_freedium/issues) · [License](LICENSE)
+[Source](https://github.com/vopaga/to_freedium) · [Issues](https://github.com/vopaga/to_freedium/issues) · [License](LICENSE) · [Support on Ko-fi](https://ko-fi.com/vopaga)
 
 ## Install
 
@@ -59,6 +59,14 @@ No analytics, no telemetry, no page content reading, no remote code, no `webRequ
 ## Contributing
 
 Development setup, test commands, and the manual testing checklist live in [CONTRIBUTING.md](CONTRIBUTING.md). Vulnerability reports should follow [SECURITY.md](SECURITY.md).
+
+## Support
+
+If To Freedium is useful to you and you want to chip in, Ko-fi is the easiest way:
+
+[![Support on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/vopaga)
+
+The same link is wired into GitHub's Sponsor button via [`.github/FUNDING.yml`](.github/FUNDING.yml). Donations are optional and never gate any feature.
 
 ## License
 
