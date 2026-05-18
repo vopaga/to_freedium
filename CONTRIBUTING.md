@@ -51,7 +51,7 @@ If you can, also smoke-test the popup on Firefox for Android, where context menu
 From the repository root:
 
 ```sh
-node --test tests/                # unit tests for mirror-template.js
+node --test                       # unit tests for mirror-template.js
 pwsh -File tests/validate.ps1     # manifest consistency + URL regex sanity
 npx web-ext lint                  # Mozilla's add-ons linter (catches AMO issues)
 ```

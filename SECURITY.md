@@ -9,11 +9,9 @@ security updates.
 
 Please **do not open a public issue** for security problems.
 
-Instead, report privately by one of the following methods:
-
-- Open a [GitHub security advisory](https://docs.github.com/code-security/security-advisories) on the project repository once the project is hosted on GitHub.
-- Until a public repository exists, contact the maintainer at the email
-  listed in `manifest.json` or in the AMO listing.
+Instead, report privately by opening a
+[GitHub security advisory](https://github.com/vopaga/to_freedium/security/advisories/new)
+on the project repository.
 
 When reporting, please include:
 

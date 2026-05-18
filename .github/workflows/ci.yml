@@ -19,7 +19,7 @@ jobs:
           node-version: 20
 
       - name: Run Node unit tests
-        run: node --test tests/
+        run: node --test
 
       - name: Run PowerShell validation
         shell: pwsh

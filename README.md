@@ -2,6 +2,10 @@
 
 Firefox extension that redirects Medium links to a Freedium-compatible mirror.
 
+Source: https://github.com/vopaga/to_freedium
+
+Issues: https://github.com/vopaga/to_freedium/issues
+
 ## Default mirror
 
 The default mirror is `https://freedium-mirror.cfd/`, a community-run
@@ -72,7 +76,7 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 
 ## Validation
 
-- Run `node --test tests/` from the repository root to execute the unit tests for `mirror-template.js`.
+- Run `node --test` from the repository root to execute the unit tests for `mirror-template.js`.
 - Run `pwsh -File tests/validate.ps1` to check manifest consistency and URL regex behavior. PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
 - Run `npx web-ext lint` to validate the manifest against Mozilla's add-ons linter.
 

@@ -54,13 +54,13 @@ Compatibility target:
 - Productivity
 - Utilities
 
-## Suggested Support Email
-
-Replace with your real support email before submission.
-
 ## Suggested Support URL
 
-Replace with your real project or issue tracker URL before submission.
+https://github.com/vopaga/to_freedium/issues
+
+## Suggested Support Email
+
+Optional. The GitHub issue tracker above is the primary support channel.
 
 ## Reviewer Notes
 
