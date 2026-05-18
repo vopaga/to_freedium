@@ -2,7 +2,7 @@
 
 (function bootstrapMirrorTemplate(globalScope) {
     const DEFAULT_MIRROR = "https://freedium-mirror.cfd/";
-    const ARTICLE_ID_REGEX = /^([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$/i;
+    const ARTICLE_ID_REGEX = /^([^?#]*?)([0-9a-f]{12})(?:[/?#].*)?$/i;
     const ARTICLE_ID_ONLY_REGEX = /^[0-9a-f]{12}$/i;
 
     function canonicalHost(value) {
@@ -15,8 +15,8 @@
 
     function canonicalizeArticlePrefix(value) {
         const prefix = String(value || "").replace(/^\/+/, "");
-        if (/[?#]/.test(prefix)) {
-            throw new Error("Article URL cannot include a query string or fragment here.");
+        if (/[?#&=]/.test(prefix)) {
+            throw new Error("Article URL cannot include unsafe characters in its prefix.");
         }
         return prefix;
     }
@@ -85,6 +85,9 @@
     function normalizeMirrorTemplate(value, options = {}) {
         const input = String(value || "").trim();
         const candidate = input || DEFAULT_MIRROR;
+        if (candidate.includes("\\")) {
+            throw new Error("Mirror URL cannot contain backslashes.");
+        }
         const probe = candidate
             .replaceAll("{id}", "example-id")
             .replaceAll("{url}", "https%3A%2F%2Fmedium.com%2Fexample-id");

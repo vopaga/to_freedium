@@ -36,7 +36,7 @@ const DEFAULT_SETTINGS = {
 
 const BRIDGE_TOKEN_REGEX = /^[0-9a-f]{32}$/;
 const MEDIUM_HOST_REGEX = "(?:[a-z0-9-]+\\.)*medium\\.com";
-const ARTICLE_PATH_REGEX = "([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$";
+const ARTICLE_PATH_REGEX = "([^?#]*?)([0-9a-f]{12})(?:[/?#].*)?$";
 let builtinPublicationsPromise;
 let dynamicRuleSyncChain = Promise.resolve();
 
@@ -80,10 +80,6 @@ function toOriginPattern(hostname) {
 
 function escapeRegex(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function originPatternToRegex(originPattern) {
-    return new RegExp(`^${escapeRegex(originPattern).replace(/\\\*/g, ".*")}$`);
 }
 
 function validatePublicationEntry(entry) {

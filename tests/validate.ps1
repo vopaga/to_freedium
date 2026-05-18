@@ -1,7 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-$articleRegex = '^(https?)://((?:[a-z0-9-]+\.)*medium\.com)/([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$'
-$genericArticleRegex = '^(https?)://([^/]+)/([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$'
+$rootDir = Resolve-Path (Join-Path $PSScriptRoot '..')
+
+$articleRegex = '^(https?)://((?:[a-z0-9-]+\.)*medium\.com)/([^?#]*?)([0-9a-f]{12})(?:[/?#].*)?$'
+$genericArticleRegex = '^(https?)://([^/]+)/([^?#]*?)([0-9a-f]{12})(?:[/?#].*)?$'
 $testCases = @(
     @{ Url = 'https://medium.com/@user/title-1234567890ab'; ExpectedId = '1234567890ab'; ExpectedHost = 'medium.com'; ExpectedPrefix = '@user/title-' },
     @{ Url = 'https://towardsdatascience.com/some-article-abcdef123456'; ExpectedId = 'abcdef123456'; ExpectedHost = 'towardsdatascience.com'; ExpectedPrefix = 'some-article-'; Regex = '^(https?)://(towardsdatascience\.com)/([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$' },
@@ -48,8 +50,8 @@ $blockedMirrorUrls = @(
     'https://levelup.gitconnected.com/{id}'
 )
 
-$manifest = Get-Content -Raw c:\projects\to_freedium\manifest.json | ConvertFrom-Json
-$publicationData = Get-Content -Raw c:\projects\to_freedium\data\publications.json | ConvertFrom-Json
+$manifest = Get-Content -Raw (Join-Path $rootDir 'manifest.json') | ConvertFrom-Json
+$publicationData = Get-Content -Raw (Join-Path $rootDir 'data/publications.json') | ConvertFrom-Json
 
 $expectedPermissions = @(
     'activeTab',
@@ -60,7 +62,7 @@ $expectedPermissions = @(
 )
 $expectedOptionalOrigins = $publicationData | ForEach-Object { "*://$($_.host)/*" }
 $expectedWerOrigins = @($manifest.host_permissions) + $expectedOptionalOrigins
-$expectedWerResources = @('redirect.html', 'redirect.js')
+$expectedWerResources = @('redirect.html')
 
 if ((@($manifest.permissions) -join "`n") -ne ($expectedPermissions -join "`n")) {
     throw 'permissions are out of sync with the manual-open feature set'
