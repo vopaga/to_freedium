@@ -13,10 +13,13 @@ Thanks for taking the time to look at the project.
 | `redirect.html` / `redirect.js` | Internal redirect bridge used when the mirror template needs the canonical article URL. |
 | `data/publications.json` | Curated list of optional publication domains. |
 | `rules/empty.json` | Empty static DNR ruleset used as a Firefox restart-stability workaround. |
-| `icons/icon.svg` | Single SVG used for all icon sizes. |
+| `icons/icon.svg` | Source icon. Used in the manifest at all sizes (Firefox renders SVG crisply). |
+| `icons/icon-128.png` | 128x128 raster, used only for the AMO listing page (not packaged into the extension). Regenerate from the SVG via `npm run render-icon`. |
+| `tools/render-icon.js` | Tiny script that rasterizes `icons/icon.svg` into `icons/icon-128.png` using `@resvg/resvg-js` (pure WASM, no native build). |
 | `tests/mirror-template.test.js` | Node unit tests for the URL / template helpers. |
 | `tests/validate.ps1` | PowerShell script that checks manifest internal consistency and URL regex behavior. |
 | `web-ext-config.cjs` | `web-ext` ignore list controlling what goes into the release zip. |
+| `package.json` | Declares dev-only tooling (`@resvg/resvg-js`, npm scripts). The extension itself has no runtime npm dependencies. |
 | `.github/workflows/ci.yml` | Runs Node tests, PowerShell validation, and `web-ext lint` on every push and PR. |
 | `.github/workflows/release.yml` | Builds the zip and publishes a GitHub Release on tag push. |
 | `LICENSE` | GPL-3.0. |

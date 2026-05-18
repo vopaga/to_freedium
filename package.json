@@ -1,0 +1,24 @@
+{
+    "name": "to_freedium",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Firefox extension that redirects Medium article links to a Freedium-compatible mirror. The extension itself is plain JavaScript and has no runtime dependencies; this package.json only declares dev tools.",
+    "license": "GPL-3.0-or-later",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vopaga/to_freedium.git"
+    },
+    "bugs": {
+        "url": "https://github.com/vopaga/to_freedium/issues"
+    },
+    "homepage": "https://github.com/vopaga/to_freedium#readme",
+    "scripts": {
+        "test": "node --test",
+        "lint": "web-ext lint",
+        "build": "web-ext build --overwrite-dest",
+        "render-icon": "node tools/render-icon.js"
+    },
+    "devDependencies": {
+        "@resvg/resvg-js": "^2.6.2"
+    }
+}

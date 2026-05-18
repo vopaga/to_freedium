@@ -6,6 +6,8 @@ module.exports = {
     ignoreFiles: [
         "tests",
         "tests/**",
+        "tools",
+        "tools/**",
         ".github",
         ".github/**",
         ".gitignore",
@@ -18,6 +20,7 @@ module.exports = {
         "web-ext-config.cjs",
         "package.json",
         "package-lock.json",
+        "icons/icon-128.png",
         "CONTRIBUTING.md",
         "SECURITY.md",
         "AMO_SUBMISSION.md",
