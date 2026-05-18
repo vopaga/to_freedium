@@ -2,6 +2,13 @@
 
 This file contains ready-to-adapt text for a Firefox Add-ons submission.
 
+## Listing references
+
+- Public page: https://addons.mozilla.org/firefox/addon/to-freedium/
+- Slug: `to-freedium`
+- Add-on GUID (also in `manifest.json`): `{3f1bbfd0-9fe5-4d80-9c4f-19c89f6ee7b2}`
+- Developer Hub: https://addons.mozilla.org/developers/addon/to-freedium/
+
 ## Suggested Add-on Name
 
 To Freedium

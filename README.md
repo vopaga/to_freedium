@@ -23,7 +23,11 @@
 
 ### From AMO
 
-We plan to publish on addons.mozilla.org with the 1.0.0 release. After it is listed, you can install it with one click on Firefox desktop or Android.
+Install in one click on Firefox desktop and Android:
+
+https://addons.mozilla.org/firefox/addon/to-freedium/
+
+While the latest version is in Mozilla's review queue the page shows "Awaiting Review". The install button becomes active once review passes.
 
 ### From GitHub Releases
 
