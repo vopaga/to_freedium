@@ -9,6 +9,11 @@ $testCases = @(
     @{ Url = 'https://generativeai.pub/anthropics-engineer-said-kill-markdown-here-s-what-he-actually-meant-36bee00c0ca2'; ExpectedId = '36bee00c0ca2'; ExpectedHost = 'generativeai.pub'; ExpectedPrefix = 'anthropics-engineer-said-kill-markdown-here-s-what-he-actually-meant-'; Regex = $genericArticleRegex }
 )
 
+$canonicalUrlCases = @(
+    @{ Url = 'https://medium.com/p/1234567890ab?source=rss'; Expected = 'https://medium.com/p/1234567890ab'; Regex = $articleRegex },
+    @{ Url = 'https://generativeai.pub/story-36bee00c0ca2#comments'; Expected = 'https://generativeai.pub/story-36bee00c0ca2'; Regex = $genericArticleRegex }
+)
+
 foreach ($case in $testCases) {
     $regex = if ($case.ContainsKey('Regex')) { $case.Regex } else { $articleRegex }
     if ($case.Url -notmatch $regex) {
@@ -54,8 +59,8 @@ $expectedPermissions = @(
     'storage'
 )
 $expectedOptionalOrigins = $publicationData | ForEach-Object { "*://$($_.host)/*" }
-$expectedWerOrigins = @('*://*/*')
-$expectedWerResources = @('mirror-template.js', 'redirect.html', 'redirect.js')
+$expectedWerOrigins = @($manifest.host_permissions) + $expectedOptionalOrigins
+$expectedWerResources = @('redirect.html', 'redirect.js')
 
 if ((@($manifest.permissions) -join "`n") -ne ($expectedPermissions -join "`n")) {
     throw 'permissions are out of sync with the manual-open feature set'
@@ -84,6 +89,16 @@ foreach ($case in $templateCases) {
     }
     if ($result -ne $case.Expected) {
         throw "Template expansion failed. Expected '$($case.Expected)' but got '$result'"
+    }
+}
+
+foreach ($case in $canonicalUrlCases) {
+    if ($case.Url -notmatch $case.Regex) {
+        throw "Canonical URL regex did not match: $($case.Url)"
+    }
+    $canonicalUrl = "$($Matches[1])://$($Matches[2])/$($Matches[3])$($Matches[4])"
+    if ($canonicalUrl -ne $case.Expected) {
+        throw "Expected canonical article URL '$($case.Expected)' but got '$canonicalUrl'"
     }
 }
 

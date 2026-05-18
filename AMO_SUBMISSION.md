@@ -91,8 +91,10 @@ Redirect behavior:
 - the default mirror is `https://freedium-mirror.cfd/`
 - the user can replace this with a self-hosted compatible mirror
 - templates may use `{id}` and `{url}` placeholders for self-hosted variants with a different route shape
+- `{url}` receives a canonical article URL without extra query strings or fragments
 - unsupported standalone Medium-style domains are handled only through explicit manual-open actions, not automatic all-sites interception
 - on Firefox for Android, manual-open is exposed through the popup because extension context menus are not supported there
+- the internal redirect bridge is web-accessible only from supported source domains and validates a per-install token before it will forward the tab
 
 Data handling:
 

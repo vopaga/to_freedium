@@ -23,13 +23,14 @@ const elements = {
 let appState = {
     settings: null,
     builtinPublications: [],
-    grantedOrigins: []
+    grantedOrigins: [],
+    managedMirrorHosts: ["medium.com"]
 };
 
 const EXTENSION_BASE_URL = browser.runtime.getURL("");
 
 function getManagedMirrorHosts() {
-    return ["medium.com", ...(appState.builtinPublications || []).map((publication) => publication.host)];
+    return appState.managedMirrorHosts || ["medium.com"];
 }
 
 function setControlsDisabled(disabled) {
@@ -48,6 +49,13 @@ function setFeedback(message, kind = "") {
     if (kind) {
         elements.feedback.classList.add(`is-${kind}`);
     }
+}
+
+function requireSettingsLoaded() {
+    if (!appState.settings) {
+        throw new Error("Extension state is still loading. Try again in a moment.");
+    }
+    return appState.settings;
 }
 
 function closePopupSoon() {
@@ -172,7 +180,12 @@ function renderStartupError(message) {
 
 async function refreshState() {
     const state = await browser.runtime.sendMessage({ type: "get-state" });
-    appState = state;
+    appState = {
+        settings: state?.settings || null,
+        builtinPublications: state?.builtinPublications || [],
+        grantedOrigins: state?.grantedOrigins || [],
+        managedMirrorHosts: state?.managedMirrorHosts || ["medium.com"]
+    };
     render();
 }
 
@@ -288,7 +301,8 @@ async function getCurrentPageContext() {
 
 elements.toggleButton.addEventListener("click", async () => {
     try {
-        await saveSettings({ enabled: !appState.settings.enabled });
+        const settings = requireSettingsLoaded();
+        await saveSettings({ enabled: !settings.enabled });
         setFeedback(appState.settings.enabled ? "Redirect is enabled." : "Redirect is disabled.", "success");
     } catch (error) {
         setFeedback(error.message, "error");
@@ -297,6 +311,7 @@ elements.toggleButton.addEventListener("click", async () => {
 
 elements.saveMirrorButton.addEventListener("click", async () => {
     try {
+        requireSettingsLoaded();
         const mirrorTemplate = normalizeMirrorTemplate(elements.mirrorInput.value, {
             blockedHosts: getManagedMirrorHosts()
         });
@@ -309,6 +324,7 @@ elements.saveMirrorButton.addEventListener("click", async () => {
 
 elements.resetMirrorButton.addEventListener("click", async () => {
     try {
+        requireSettingsLoaded();
         await saveSettings({ mirrorTemplate: DEFAULT_MIRROR });
         elements.mirrorInput.value = DEFAULT_MIRROR;
         setFeedback("Mirror reset to default.", "success");
@@ -319,6 +335,7 @@ elements.resetMirrorButton.addEventListener("click", async () => {
 
 elements.openCurrentButton.addEventListener("click", async () => {
     try {
+        requireSettingsLoaded();
         const context = await getCurrentPageContext();
         await openUrlThroughMirror(context.sourceUrl, {
             currentTabId: context.targetTabId,
@@ -332,6 +349,7 @@ elements.openCurrentButton.addEventListener("click", async () => {
 
 elements.openUrlButton.addEventListener("click", async () => {
     try {
+        requireSettingsLoaded();
         const sourceUrl = String(elements.articleUrlInput.value || "").trim();
         if (!sourceUrl) {
             throw new Error("Paste a Medium-style article URL first.");
@@ -347,6 +365,8 @@ elements.openUrlButton.addEventListener("click", async () => {
         setFeedback(error.message, "error");
     }
 });
+
+setControlsDisabled(true);
 
 refreshState().catch((error) => {
     renderStartupError(error.message);

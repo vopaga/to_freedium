@@ -29,11 +29,13 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 
 - The redirect rule is limited to top-level navigations.
 - For automatic redirects, the extension only watches `medium.com`, `*.medium.com`, and explicitly enabled curated publication domains.
-- For Medium-style article URLs, the extension extracts the article ID and reconstructs the original article URL through an internal redirect bridge page when needed.
+- For Medium-style article URLs, the extension extracts the article ID and reconstructs a canonical article URL through an internal redirect bridge page when needed.
 - If the configured mirror setting is a plain base URL, the extension redirects to `<mirror-base-url><article-id>`.
 - If the configured mirror setting contains `{id}` and/or `{url}`, those placeholders are filled before the final redirect.
+- `{url}` receives the canonical article URL without extra query-string or fragment noise, so automatic and manual opening behave the same way.
 - Mirror settings that point back to `medium.com` or the supported publication domains are rejected to prevent redirect loops.
 - If redirect preparation fails, the bridge page now shows an error and a fallback link to the original article instead of silently hanging.
+- The redirect bridge is exposed only to supported source domains and validates an internal token before it can send the tab to the configured mirror.
 - Unsupported standalone domains such as `generativeai.pub` are not auto-captured, but they can be opened manually through the popup on desktop and Android, and through the desktop context menu.
 
 ## Development

@@ -16,7 +16,7 @@
             <p class="summary">Redirect supported Medium-style links to your chosen mirror.</p>
             <div class="status-row">
                 <span id="status-badge" class="status-badge">Disabled</span>
-                <button id="toggle-button" class="toggle-button" type="button">Turn on</button>
+                <button id="toggle-button" class="toggle-button" type="button" disabled>Turn on</button>
             </div>
             <p id="status-copy" class="status-copy"></p>
         </section>
@@ -24,13 +24,13 @@
         <section class="panel">
             <label class="field-label" for="mirror-url">Mirror URL or template</label>
             <input id="mirror-url" class="text-input" type="text" placeholder="https://freedium-mirror.cfd/"
-                spellcheck="false">
+                spellcheck="false" disabled>
             <p class="hint">Base URL example: https://freedium-mirror.cfd/ . Template example:
                 https://mirror.example/read?url={url} or https://mirror.example/{id}. Mirror hosts cannot be Medium or
                 supported publication domains.</p>
             <div class="mirror-actions">
-                <button id="save-mirror-button" class="secondary-button" type="button">Save mirror setting</button>
-                <button id="reset-mirror-button" class="secondary-button" type="button">Reset to default</button>
+                <button id="save-mirror-button" class="secondary-button" type="button" disabled>Save mirror setting</button>
+                <button id="reset-mirror-button" class="secondary-button" type="button" disabled>Reset to default</button>
             </div>
         </section>
 
@@ -40,10 +40,10 @@
                 <p>Use this for unsupported Medium-style domains such as standalone publications.</p>
             </div>
             <input id="article-url" class="text-input" type="text"
-                placeholder="https://generativeai.pub/...-36bee00c0ca2" spellcheck="false">
+                placeholder="https://generativeai.pub/...-36bee00c0ca2" spellcheck="false" disabled>
             <div class="manual-actions">
-                <button id="open-current-button" class="secondary-button" type="button">Open current page</button>
-                <button id="open-url-button" class="secondary-button" type="button">Open pasted URL</button>
+                <button id="open-current-button" class="secondary-button" type="button" disabled>Open current page</button>
+                <button id="open-url-button" class="secondary-button" type="button" disabled>Open pasted URL</button>
             </div>
         </section>
 

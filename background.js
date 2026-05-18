@@ -5,14 +5,18 @@ if (typeof browser === "undefined") {
 }
 
 const STORAGE_KEY = "settings";
+const BRIDGE_TOKEN_KEY = "bridgeToken";
 const RULE_ID_BASE = 1000;
 const {
     DEFAULT_MIRROR,
+    buildCanonicalArticleUrl,
     buildMirrorUrl,
     canonicalHost,
+    hostMatchesManagedSource,
     normalizeMirrorTemplate,
 } = globalThis.toFreediumMirror;
 const PUBLICATIONS_PATH = "data/publications.json";
+const EXTENSION_BASE_URL = browser.runtime.getURL("");
 const MENU_IDS = {
     openLink: "open-link-through-mirror",
     openPage: "open-page-through-mirror",
@@ -30,10 +34,29 @@ const DEFAULT_SETTINGS = {
     enabledPresetDomains: [],
 };
 
+const BRIDGE_TOKEN_REGEX = /^[0-9a-f]{32}$/;
 const MEDIUM_HOST_REGEX = "(?:[a-z0-9-]+\\.)*medium\\.com";
 const ARTICLE_PATH_REGEX = "([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$";
 let builtinPublicationsPromise;
 let dynamicRuleSyncChain = Promise.resolve();
+
+function createBridgeToken() {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+async function getBridgeToken() {
+    const stored = await browser.storage.local.get(BRIDGE_TOKEN_KEY);
+    const token = String(stored[BRIDGE_TOKEN_KEY] || "").trim().toLowerCase();
+    if (BRIDGE_TOKEN_REGEX.test(token)) {
+        return token;
+    }
+
+    const nextToken = createBridgeToken();
+    await browser.storage.local.set({ [BRIDGE_TOKEN_KEY]: nextToken });
+    return nextToken;
+}
 
 function normalizeDomainEntry(value) {
     const input = canonicalHost(value);
@@ -159,9 +182,9 @@ function buildRedirectBridgeBase() {
     return browser.runtime.getURL("redirect.html");
 }
 
-function buildRuleRedirectTarget(mirrorTemplate) {
+function buildRuleRedirectTarget(mirrorTemplate, bridgeToken) {
     if (mirrorTemplate.includes("{url}")) {
-        return `${buildRedirectBridgeBase()}#scheme=\\1&host=\\2&prefix=\\3&id=\\4`;
+        return `${buildRedirectBridgeBase()}#token=${bridgeToken}&scheme=\\1&host=\\2&prefix=\\3&id=\\4`;
     }
     if (mirrorTemplate.includes("{id}")) {
         return mirrorTemplate.replaceAll("{id}", "\\4");
@@ -169,8 +192,8 @@ function buildRuleRedirectTarget(mirrorTemplate) {
     return `${mirrorTemplate}\\4`;
 }
 
-function buildRuleForHostRegex(hostRegex, ruleId, mirrorTemplate) {
-    const redirectTarget = buildRuleRedirectTarget(mirrorTemplate);
+function buildRuleForHostRegex(hostRegex, ruleId, mirrorTemplate, bridgeToken) {
+    const redirectTarget = buildRuleRedirectTarget(mirrorTemplate, bridgeToken);
     return {
         id: ruleId,
         priority: 1,
@@ -187,8 +210,8 @@ function buildRuleForHostRegex(hostRegex, ruleId, mirrorTemplate) {
     };
 }
 
-function buildRuleForExactHost(hostname, ruleId, mirrorTemplate) {
-    return buildRuleForHostRegex(escapeRegex(hostname), ruleId, mirrorTemplate);
+function buildRuleForExactHost(hostname, ruleId, mirrorTemplate, bridgeToken) {
+    return buildRuleForHostRegex(escapeRegex(hostname), ruleId, mirrorTemplate, bridgeToken);
 }
 
 function getMenusApi() {
@@ -201,6 +224,90 @@ async function computeManagedHosts(settings) {
     return Array.from(hosts).sort();
 }
 
+function hostAllowedForAutomaticRedirect(hostname, managedHosts) {
+    return managedHosts.some((managedHost) => {
+        if (managedHost === "medium.com") {
+            return hostMatchesManagedSource(hostname, managedHost);
+        }
+        return hostname === managedHost;
+    });
+}
+
+function isTrustedExtensionSender(sender) {
+    if (!sender) {
+        return false;
+    }
+    if (sender.id && sender.id !== browser.runtime.id) {
+        return false;
+    }
+    if (!sender.url) {
+        return true;
+    }
+    return sender.url.startsWith(EXTENSION_BASE_URL);
+}
+
+async function resolveRedirectBridge(payload) {
+    const requestedToken = String(payload?.token || "").trim().toLowerCase();
+    const currentToken = await getBridgeToken();
+
+    if (!BRIDGE_TOKEN_REGEX.test(requestedToken) || requestedToken !== currentToken) {
+        return {
+            ok: false,
+            message: "This redirect request is no longer valid.",
+        };
+    }
+
+    let originalUrl;
+    try {
+        originalUrl = buildCanonicalArticleUrl({
+            scheme: payload?.scheme,
+            host: payload?.host,
+            prefix: payload?.prefix,
+            id: payload?.id,
+        });
+    } catch (error) {
+        return {
+            ok: false,
+            message: error.message,
+        };
+    }
+
+    const articleHost = canonicalHost(new URL(originalUrl).hostname);
+    const settings = await getStoredSettings();
+    const redirectableHosts = await computeManagedHosts(settings);
+
+    if (!hostAllowedForAutomaticRedirect(articleHost, redirectableHosts)) {
+        return {
+            ok: false,
+            message: "This redirect request is not allowed for the current domain.",
+        };
+    }
+
+    if (!settings.enabled) {
+        return {
+            ok: false,
+            message: "Automatic redirect is currently disabled.",
+            originalUrl,
+        };
+    }
+
+    try {
+        const blockedHosts = await getManagedMirrorHosts();
+        const destination = buildMirrorUrl(originalUrl, settings.mirrorTemplate, { blockedHosts });
+        return {
+            ok: true,
+            destination,
+            originalUrl,
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            message: error.message,
+            originalUrl,
+        };
+    }
+}
+
 async function applyDynamicRules(settingsInput) {
     const settings = settingsInput || await getStoredSettings();
     const existingRules = await browser.declarativeNetRequest.getDynamicRules();
@@ -209,11 +316,12 @@ async function applyDynamicRules(settingsInput) {
 
     if (settings.enabled) {
         const hosts = await computeManagedHosts(settings);
-        addRules.push(buildRuleForHostRegex(MEDIUM_HOST_REGEX, RULE_ID_BASE, settings.mirrorTemplate));
+        const bridgeToken = settings.mirrorTemplate.includes("{url}") ? await getBridgeToken() : undefined;
+        addRules.push(buildRuleForHostRegex(MEDIUM_HOST_REGEX, RULE_ID_BASE, settings.mirrorTemplate, bridgeToken));
         hosts
             .filter((host) => host !== "medium.com")
             .forEach((host, index) => {
-                addRules.push(buildRuleForExactHost(host, RULE_ID_BASE + 1 + index, settings.mirrorTemplate));
+                addRules.push(buildRuleForExactHost(host, RULE_ID_BASE + 1 + index, settings.mirrorTemplate, bridgeToken));
             });
     }
 
@@ -368,8 +476,11 @@ if (browser.permissions?.onRemoved?.addListener) {
     });
 }
 
-browser.runtime.onMessage.addListener((message) => {
+browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || typeof message !== "object") {
+        return undefined;
+    }
+    if (!isTrustedExtensionSender(sender)) {
         return undefined;
     }
 
@@ -380,7 +491,8 @@ browser.runtime.onMessage.addListener((message) => {
             return {
                 settings,
                 builtinPublications,
-                grantedOrigins: await getGrantedOrigins()
+                grantedOrigins: await getGrantedOrigins(),
+                managedMirrorHosts: await getManagedMirrorHosts(),
             };
         })();
     }
@@ -403,6 +515,10 @@ browser.runtime.onMessage.addListener((message) => {
             });
             return { ok: true, destination };
         })();
+    }
+
+    if (message.type === "resolve-redirect-bridge") {
+        return resolveRedirectBridge(message.payload);
     }
 
     return undefined;
