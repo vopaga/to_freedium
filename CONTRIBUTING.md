@@ -48,13 +48,17 @@ If you can, also smoke-test the popup on Firefox for Android, where context menu
 
 ## Validation
 
-Run the bundled validation script from the repository root:
+From the repository root:
 
 ```sh
-pwsh -File tests/validate.ps1
+node --test tests/                # unit tests for mirror-template.js
+pwsh -File tests/validate.ps1     # manifest consistency + URL regex sanity
+npx web-ext lint                  # Mozilla's add-ons linter (catches AMO issues)
 ```
 
-The script checks regex patterns, `manifest.json` consistency, and `web_accessible_resources` against the curated publication list. PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
+These same checks run on every push and pull request via `.github/workflows/ci.yml`.
+
+PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
 
 ## Code style
 

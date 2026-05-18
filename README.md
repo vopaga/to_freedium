@@ -72,8 +72,11 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 
 ## Validation
 
-- Run `pwsh -File tests/validate.ps1` from the repository root to validate URL extraction and mirror template behavior. PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
+- Run `node --test tests/` from the repository root to execute the unit tests for `mirror-template.js`.
+- Run `pwsh -File tests/validate.ps1` to check manifest consistency and URL regex behavior. PowerShell 7+ is available cross-platform via [the official installers](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
 - Run `npx web-ext lint` to validate the manifest against Mozilla's add-ons linter.
+
+All three checks also run on every push and pull request via the GitHub Actions workflow in `.github/workflows/ci.yml`. GitHub Actions is free for public repositories on standard runners.
 
 ## Contributing
 
