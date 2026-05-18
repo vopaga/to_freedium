@@ -14,20 +14,29 @@ Thanks for taking the time to look at the project.
 | `data/publications.json` | Curated list of optional publication domains. |
 | `rules/empty.json` | Empty static DNR ruleset used as a Firefox restart-stability workaround. |
 | `icons/icon.svg` | Single SVG used for all icon sizes. |
-| `tests/` | Validation scripts. |
+| `tests/mirror-template.test.js` | Node unit tests for the URL / template helpers. |
+| `tests/validate.ps1` | PowerShell script that checks manifest internal consistency and URL regex behavior. |
+| `web-ext-config.cjs` | `web-ext` ignore list controlling what goes into the release zip. |
+| `.github/workflows/ci.yml` | Runs Node tests, PowerShell validation, and `web-ext lint` on every push and PR. |
+| `.github/workflows/release.yml` | Builds the zip and publishes a GitHub Release on tag push. |
+| `LICENSE` | GPL-3.0. |
 
 ## Local development
 
-1. Open `about:debugging#/runtime/this-firefox` in Firefox.
+The fastest loop is [`web-ext`](https://github.com/mozilla/web-ext):
+
+```sh
+npx web-ext run     # launches a clean Firefox profile with the extension loaded and auto-reloads on file changes
+npx web-ext lint    # runs Mozilla's add-ons linter against the manifest
+```
+
+If you prefer to load the extension into your existing Firefox profile:
+
+1. Open `about:debugging#/runtime/this-firefox`.
 2. Choose **Load Temporary Add-on** and pick `manifest.json` from this directory.
 3. Open the popup, toggle redirect on, and visit any Medium article to confirm the redirect works.
 
-For an iterative loop you can use [`web-ext`](https://github.com/mozilla/web-ext):
-
-```sh
-npx web-ext run
-npx web-ext lint
-```
+Temporary add-ons unload on restart, which is fine for development.
 
 ## Manual testing checklist
 
