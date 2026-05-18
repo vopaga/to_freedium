@@ -50,12 +50,19 @@ function normalizeDomainEntry(value) {
 }
 
 function normalizeMirrorBaseUrl(value) {
-  const url = new URL(String(value || "").trim() || DEFAULT_MIRROR);
+  const input = String(value || "").trim() || DEFAULT_MIRROR;
+  const probe = input
+    .replaceAll("{id}", "example-id")
+    .replaceAll("{url}", "https%3A%2F%2Fmedium.com%2Fexample-id");
+  const url = new URL(probe);
   if (!["https:", "http:"].includes(url.protocol)) {
     throw new Error("Mirror URL must use http or https.");
   }
-  url.hash = "";
-  return url.toString();
+  const invalidToken = input.match(/\{(?!id\}|url\})[^}]*\}/);
+  if (invalidToken) {
+    throw new Error("Only {id} and {url} placeholders are supported.");
+  }
+  return input;
 }
 
 function toOriginPattern(hostname) {
@@ -189,7 +196,7 @@ function render() {
   }
 
   updateStatus();
-  elements.mirrorInput.value = appState.settings.mirrorBaseUrl || DEFAULT_MIRROR;
+  elements.mirrorInput.value = appState.settings.mirrorTemplate || appState.settings.mirrorBaseUrl || DEFAULT_MIRROR;
 
   elements.presetList.replaceChildren(
     ...appState.builtinPublications.map((publication) => createPresetItem(publication))
@@ -233,9 +240,9 @@ elements.toggleButton.addEventListener("click", async () => {
 
 elements.saveMirrorButton.addEventListener("click", async () => {
   try {
-    const mirrorBaseUrl = normalizeMirrorBaseUrl(elements.mirrorInput.value);
-    await saveSettings({ mirrorBaseUrl });
-    setFeedback("Mirror URL updated.", "success");
+    const mirrorTemplate = normalizeMirrorBaseUrl(elements.mirrorInput.value);
+    await saveSettings({ mirrorTemplate });
+    setFeedback("Mirror setting updated.", "success");
   } catch (error) {
     setFeedback(error.message, "error");
   }

@@ -10,11 +10,6 @@
     "label": "Better Programming"
   },
   {
-    "id": "the-startup",
-    "host": "thestartup.medium.com",
-    "label": "The Startup"
-  },
-  {
     "id": "ux-collective",
     "host": "uxdesign.cc",
     "label": "UX Collective"
@@ -23,5 +18,10 @@
     "id": "level-up",
     "host": "levelup.gitconnected.com",
     "label": "Level Up Coding"
+  },
+  {
+    "id": "better-humans",
+    "host": "betterhumans.pub",
+    "label": "Better Humans"
   }
 ]

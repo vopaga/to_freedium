@@ -42,6 +42,19 @@
     "48": "icons/icon.svg",
     "96": "icons/icon.svg"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "redirect.html",
+        "redirect.js"
+      ],
+      "matches": [
+        "*://medium.com/*",
+        "*://*.medium.com/*",
+        "*://*/*"
+      ]
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "to-freedium@alexa.local",

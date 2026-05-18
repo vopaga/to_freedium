@@ -18,7 +18,7 @@ What it does:
 
 - redirects top-level navigation on `medium.com` and supported Medium publication domains
 - lets the user turn redirects on or off from the popup
-- lets the user choose a custom mirror base URL
+- lets the user choose a custom mirror base URL or mirror template
 - lets the user enable extra publication domains one by one
 - stores settings locally on the device
 
@@ -84,6 +84,7 @@ Redirect behavior:
 - it redirects to `<mirror-base-url><article-id>`
 - the default mirror is `https://freedium-mirror.cfd/`
 - the user can replace this with a self-hosted compatible mirror
+- templates may use `{id}` and `{url}` placeholders for self-hosted variants with a different route shape
 
 Data handling:
 

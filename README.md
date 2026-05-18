@@ -7,14 +7,14 @@ Firefox extension that redirects Medium links to a Freedium-compatible mirror.
 - Works in Firefox on desktop and Android.
 - Redirects top-level navigation from `medium.com` and `*.medium.com` by extracting the Medium article ID and opening the same article through the selected mirror.
 - Lets the user switch the redirect on and off from the popup.
-- Lets the user set a custom mirror base URL instead of the default `https://freedium-mirror.cfd/`.
+- Lets the user set either a custom mirror base URL or a mirror template with `{id}` and `{url}` placeholders.
 - Lets the user enable built-in publication presets and add exact custom hostnames.
 - Requests access to extra domains only when the user explicitly enables them.
 
 ## Permissions model
 
 - `declarativeNetRequestWithHostAccess`: used to register redirect rules without the broader install warning shown by `declarativeNetRequest`.
-- `storage`: used to persist the enabled state, custom mirror URL, and extra domains.
+- `storage`: used to persist the enabled state, custom mirror setting, and extra domains.
 - `host_permissions` for `medium.com` and `*.medium.com`: needed for the built-in redirect behavior.
 - `optional_host_permissions` and `optional_permissions` for runtime domain grants: used for custom publication domains.
 
@@ -23,8 +23,9 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 ## Redirect behavior
 
 - The redirect rule is limited to top-level navigations.
-- For Medium-style article URLs, the extension extracts the article ID from the URL and redirects to `<mirror-base-url><article-id>`.
-- This matches the public URL format currently exposed by Freedium-compatible mirrors.
+- For Medium-style article URLs, the extension extracts the article ID and reconstructs the original article URL through an internal redirect bridge page.
+- If the configured mirror setting is a plain base URL, the extension redirects to `<mirror-base-url><article-id>`.
+- If the configured mirror setting contains `{id}` and/or `{url}`, those placeholders are filled before the final redirect.
 
 ## Development
 
