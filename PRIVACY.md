@@ -5,9 +5,8 @@ To Freedium does not collect analytics, tracking data, or telemetry.
 The extension stores these settings locally in Firefox:
 
 - whether redirect is enabled
-- the selected mirror base URL or mirror template
+- the selected mirror URL or mirror template
 - enabled built-in publication domains
-- custom publication domains added by the user
 
 The extension does not read page content.
 

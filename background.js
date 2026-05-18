@@ -4,49 +4,24 @@ if (typeof browser === "undefined") {
   globalThis.browser = chrome;
 }
 
+importScripts("mirror-template.js");
+
 const STORAGE_KEY = "settings";
 const RULE_ID_BASE = 1000;
-const DEFAULT_MIRROR = "https://freedium-mirror.cfd/";
+const { DEFAULT_MIRROR, normalizeMirrorTemplate } = globalThis.toFreediumMirror;
+const PUBLICATIONS_PATH = "data/publications.json";
 const DEFAULT_SETTINGS = {
   enabled: true,
   mirrorTemplate: DEFAULT_MIRROR,
-  customDomains: [],
   enabledPresetDomains: [],
 };
 
-const BUILTIN_PUBLICATIONS = [
-  { id: "towards-data-science", host: "towardsdatascience.com", label: "Towards Data Science" },
-  { id: "better-programming", host: "betterprogramming.pub", label: "Better Programming" },
-  { id: "ux-collective", host: "uxdesign.cc", label: "UX Collective" },
-  { id: "level-up", host: "levelup.gitconnected.com", label: "Level Up Coding" },
-  { id: "better-humans", host: "betterhumans.pub", label: "Better Humans" }
-];
-
 const MEDIUM_HOST_REGEX = "(?:[a-z0-9-]+\\.)*medium\\.com";
 const ARTICLE_PATH_REGEX = "([^?#]*?)([0-9a-f]{12})(?:[?#].*)?$";
+let builtinPublicationsPromise;
 
 function canonicalHost(hostname) {
   return String(hostname || "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
-}
-
-function normalizeMirrorTemplate(value) {
-  const input = String(value || "").trim();
-  const candidate = input || DEFAULT_MIRROR;
-  const probe = candidate
-    .replaceAll("{id}", "example-id")
-    .replaceAll("{url}", "https%3A%2F%2Fmedium.com%2Fexample-id");
-  const url = new URL(probe);
-  if (!["https:", "http:"].includes(url.protocol)) {
-    throw new Error("Mirror URL must use http or https.");
-  }
-  if (candidate.includes("{") || candidate.includes("}")) {
-    const invalidToken = candidate.match(/\{(?!id\}|url\})[^}]*\}/);
-    if (invalidToken) {
-      throw new Error("Only {id} and {url} placeholders are supported.");
-    }
-    return candidate;
-  }
-  return url.toString();
 }
 
 function normalizeDomainEntry(value) {
@@ -77,28 +52,58 @@ function originPatternToRegex(originPattern) {
   return new RegExp(`^${escapeRegex(originPattern).replace(/\\\*/g, ".*")}$`);
 }
 
-function getBuiltinPublicationHosts() {
-  return BUILTIN_PUBLICATIONS.map((entry) => entry.host);
+function validatePublicationEntry(entry) {
+  if (!entry || typeof entry !== "object") {
+    throw new Error("Publication entry must be an object.");
+  }
+  return {
+    id: String(entry.id || "").trim(),
+    host: normalizeDomainEntry(entry.host),
+    label: String(entry.label || "").trim(),
+  };
 }
 
-function getOptionalPublicationHosts() {
+async function getBuiltinPublications() {
+  if (!builtinPublicationsPromise) {
+    builtinPublicationsPromise = fetch(browser.runtime.getURL(PUBLICATIONS_PATH))
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load ${PUBLICATIONS_PATH}.`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Publication data must be an array.");
+        }
+        return data.map(validatePublicationEntry);
+      });
+  }
+  return builtinPublicationsPromise;
+}
+
+async function getBuiltinPublicationHosts() {
+  const publications = await getBuiltinPublications();
+  return publications.map((entry) => entry.host);
+}
+
+async function getCuratedPublicationHosts() {
   return getBuiltinPublicationHosts();
 }
 
 async function getStoredSettings() {
   const stored = await browser.storage.local.get(STORAGE_KEY);
+  const persisted = stored[STORAGE_KEY] || {};
   return {
     ...DEFAULT_SETTINGS,
-    ...(stored[STORAGE_KEY] || {}),
+    ...persisted,
+    mirrorTemplate: normalizeMirrorTemplate(persisted.mirrorTemplate),
   };
 }
 
 async function saveSettings(settings) {
-  const allowedPresetHosts = new Set(getBuiltinPublicationHosts());
+  const allowedPresetHosts = new Set(await getBuiltinPublicationHosts());
   const sanitized = {
     enabled: Boolean(settings.enabled),
-    mirrorTemplate: normalizeMirrorTemplate(settings.mirrorTemplate || settings.mirrorBaseUrl),
-    customDomains: Array.from(new Set((settings.customDomains || []).map(normalizeDomainEntry))).sort(),
+    mirrorTemplate: normalizeMirrorTemplate(settings.mirrorTemplate),
     enabledPresetDomains: Array.from(new Set((settings.enabledPresetDomains || []).map(normalizeDomainEntry)))
       .filter((hostname) => allowedPresetHosts.has(hostname))
       .sort(),
@@ -133,11 +138,9 @@ function buildRuleForExactHost(hostname, ruleId) {
   return buildRuleForHostRegex(escapeRegex(hostname), ruleId);
 }
 
-function computeManagedHosts(settings) {
-  const hosts = new Set(["medium.com", ...getBuiltinPublicationHosts().filter((host) => settings.enabledPresetDomains.includes(host))]);
-  for (const customDomain of settings.customDomains) {
-    hosts.add(customDomain);
-  }
+async function computeManagedHosts(settings) {
+  const publicationHosts = await getBuiltinPublicationHosts();
+  const hosts = new Set(["medium.com", ...publicationHosts.filter((host) => settings.enabledPresetDomains.includes(host))]);
   return Array.from(hosts).sort();
 }
 
@@ -148,7 +151,7 @@ async function syncDynamicRules(settingsInput) {
   const addRules = [];
 
   if (settings.enabled) {
-    const hosts = computeManagedHosts(settings);
+    const hosts = await computeManagedHosts(settings);
     addRules.push(buildRuleForHostRegex(MEDIUM_HOST_REGEX, RULE_ID_BASE));
     hosts
       .filter((host) => host !== "medium.com")
@@ -177,17 +180,16 @@ async function pruneDomainsWithoutPermission(removedOrigins) {
 
   const settings = await getStoredSettings();
   const shouldRemoveDomain = (hostname) => removedOrigins.includes(toOriginPattern(hostname));
+  const curatedPublicationHosts = await getCuratedPublicationHosts();
 
-  const nextCustomDomains = settings.customDomains.filter((hostname) => !shouldRemoveDomain(hostname));
   const nextPresetDomains = settings.enabledPresetDomains.filter((hostname) => {
-    if (!getOptionalPublicationHosts().includes(hostname)) {
+    if (!curatedPublicationHosts.includes(hostname)) {
       return true;
     }
     return !shouldRemoveDomain(hostname);
   });
 
   if (
-    nextCustomDomains.length === settings.customDomains.length &&
     nextPresetDomains.length === settings.enabledPresetDomains.length
   ) {
     return;
@@ -195,7 +197,6 @@ async function pruneDomainsWithoutPermission(removedOrigins) {
 
   await saveSettings({
     ...settings,
-    customDomains: nextCustomDomains,
     enabledPresetDomains: nextPresetDomains,
   });
 }
@@ -235,10 +236,11 @@ browser.runtime.onMessage.addListener((message) => {
   if (message.type === "get-state") {
     return (async () => {
       const settings = await getStoredSettings();
+      const builtinPublications = await getBuiltinPublications();
       const grantedPermissions = await browser.permissions.getAll();
       return {
         settings,
-        builtinPublications: BUILTIN_PUBLICATIONS,
+        builtinPublications,
         grantedOrigins: grantedPermissions.origins || []
       };
     })();

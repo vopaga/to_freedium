@@ -29,26 +29,15 @@
     <section class="panel">
       <div class="panel-heading">
         <h2>Publication presets</h2>
-        <p>Enable extra domains one by one.</p>
+        <p>Enable extra publication domains one by one.</p>
       </div>
       <div id="preset-list" class="preset-list"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <h2>Custom domains</h2>
-        <p>Add exact hostnames such as towardsdatascience.com</p>
-      </div>
-      <div class="add-domain-row">
-        <input id="custom-domain-input" class="text-input" type="text" placeholder="publication.example.com" spellcheck="false">
-        <button id="add-domain-button" class="secondary-button" type="button">Add</button>
-      </div>
-      <div id="custom-domain-list" class="domain-list"></div>
     </section>
 
     <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
   </main>
 
+  <script src="mirror-template.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

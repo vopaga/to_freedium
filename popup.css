@@ -111,8 +111,7 @@ h2 {
 }
 
 .toggle-button,
-.secondary-button,
-.remove-button {
+.secondary-button {
   border: 0;
   border-radius: 999px;
   cursor: pointer;
@@ -130,9 +129,7 @@ h2 {
 .toggle-button:hover,
 .toggle-button:focus-visible,
 .secondary-button:hover,
-.secondary-button:focus-visible,
-.remove-button:hover,
-.remove-button:focus-visible {
+.secondary-button:focus-visible {
   outline: none;
   filter: brightness(0.96);
 }
@@ -164,8 +161,7 @@ h2 {
   outline-offset: 1px;
 }
 
-.secondary-button,
-.remove-button {
+.secondary-button {
   min-height: 38px;
   padding: 0 14px;
   background: #ece7db;
@@ -176,14 +172,12 @@ h2 {
   margin-bottom: 10px;
 }
 
-.preset-list,
-.domain-list {
+.preset-list {
   display: grid;
   gap: 8px;
 }
 
-.preset-item,
-.domain-item {
+.preset-item {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
@@ -194,25 +188,16 @@ h2 {
   background: rgba(255, 255, 255, 0.64);
 }
 
-.preset-main,
-.domain-main {
+.preset-main {
   min-width: 0;
 }
 
-.preset-label,
-.domain-label {
+.preset-label {
   font-weight: 700;
 }
 
 .domain-meta {
   font-size: 12px;
-}
-
-.add-domain-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  margin-bottom: 10px;
 }
 
 .feedback {
@@ -234,9 +219,7 @@ h2 {
   }
 
   .status-row,
-  .add-domain-row,
-  .preset-item,
-  .domain-item {
+  .preset-item {
     grid-template-columns: 1fr;
   }
 }

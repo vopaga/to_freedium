@@ -5,7 +5,15 @@ if (typeof browser === "undefined") {
 }
 
 const STORAGE_KEY = "settings";
-const DEFAULT_MIRROR = "https://freedium-mirror.cfd/";
+const { DEFAULT_MIRROR, normalizeMirrorTemplate } = globalThis.toFreediumMirror;
+
+const elements = {
+  title: document.getElementById("title"),
+  message: document.getElementById("message"),
+  error: document.getElementById("error"),
+  fallback: document.getElementById("fallback"),
+  originalLink: document.getElementById("original-link")
+};
 
 function fillTemplate(template, values) {
   return template
@@ -13,25 +21,21 @@ function fillTemplate(template, values) {
     .replaceAll("{url}", encodeURIComponent(values.url));
 }
 
-function normalizeMirrorTemplate(value) {
-  const input = String(value || "").trim() || DEFAULT_MIRROR;
-  const probe = input
-    .replaceAll("{id}", "example-id")
-    .replaceAll("{url}", "https%3A%2F%2Fmedium.com%2Fexample-id");
-  const url = new URL(probe);
-  if (!["https:", "http:"].includes(url.protocol)) {
-    throw new Error("Invalid mirror template protocol.");
-  }
-  if (input.includes("{") || input.includes("}")) {
-    return input;
-  }
-  return url.toString();
-}
-
 async function getMirrorTemplate() {
   const stored = await browser.storage.local.get(STORAGE_KEY);
   const settings = stored[STORAGE_KEY] || {};
-  return normalizeMirrorTemplate(settings.mirrorTemplate || settings.mirrorBaseUrl || DEFAULT_MIRROR);
+  return normalizeMirrorTemplate(settings.mirrorTemplate || DEFAULT_MIRROR);
+}
+
+function showFailure(message, originalUrl) {
+  elements.title.textContent = "Redirect failed";
+  elements.message.textContent = "The extension could not build a valid mirror redirect for this page.";
+  elements.error.textContent = message;
+  elements.error.classList.remove("hidden");
+  if (originalUrl) {
+    elements.originalLink.href = originalUrl;
+    elements.fallback.classList.remove("hidden");
+  }
 }
 
 async function redirect() {
@@ -41,11 +45,13 @@ async function redirect() {
   const prefix = params.get("prefix") || "";
   const id = params.get("id") || "";
 
+  const originalUrl = `${scheme}://${host}/${prefix}${id}`;
+
   if (!id) {
+    showFailure("The article identifier could not be extracted from the URL.", originalUrl);
     return;
   }
 
-  const originalUrl = `${scheme}://${host}/${prefix}${id}`;
   const mirrorTemplate = await getMirrorTemplate();
   const destination = mirrorTemplate.includes("{id}") || mirrorTemplate.includes("{url}")
     ? fillTemplate(mirrorTemplate, { id, url: originalUrl })
@@ -56,4 +62,11 @@ async function redirect() {
 
 redirect().catch((error) => {
   console.error("Redirect bridge failed", error);
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const scheme = params.get("scheme") || "https";
+  const host = params.get("host") || "medium.com";
+  const prefix = params.get("prefix") || "";
+  const id = params.get("id") || "";
+  const originalUrl = id ? `${scheme}://${host}/${prefix}${id}` : null;
+  showFailure(error.message, originalUrl);
 });

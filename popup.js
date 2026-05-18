@@ -4,7 +4,7 @@ if (typeof browser === "undefined") {
   globalThis.browser = chrome;
 }
 
-const DEFAULT_MIRROR = "https://freedium-mirror.cfd/";
+const { DEFAULT_MIRROR, normalizeMirrorTemplate } = globalThis.toFreediumMirror;
 
 const elements = {
   statusBadge: document.getElementById("status-badge"),
@@ -13,9 +13,6 @@ const elements = {
   mirrorInput: document.getElementById("mirror-url"),
   saveMirrorButton: document.getElementById("save-mirror-button"),
   presetList: document.getElementById("preset-list"),
-  customDomainInput: document.getElementById("custom-domain-input"),
-  addDomainButton: document.getElementById("add-domain-button"),
-  customDomainList: document.getElementById("custom-domain-list"),
   feedback: document.getElementById("feedback")
 };
 
@@ -25,47 +22,18 @@ let appState = {
   grantedOrigins: []
 };
 
+function setControlsDisabled(disabled) {
+  elements.toggleButton.disabled = disabled;
+  elements.mirrorInput.disabled = disabled;
+  elements.saveMirrorButton.disabled = disabled;
+}
+
 function setFeedback(message, kind = "") {
   elements.feedback.textContent = message || "";
   elements.feedback.className = "feedback";
   if (kind) {
     elements.feedback.classList.add(`is-${kind}`);
   }
-}
-
-function canonicalHost(value) {
-  return String(value || "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
-}
-
-function normalizeDomainEntry(value) {
-  const input = canonicalHost(value);
-  if (!input || input.includes("*") || input.includes("/") || input.includes(":")) {
-    throw new Error("Enter an exact hostname without path, port, or wildcard.");
-  }
-  const hostname = new URL(`https://${input}/`).hostname.toLowerCase();
-  if (!hostname.includes(".")) {
-    throw new Error("Hostname must include a dot.");
-  }
-  return hostname;
-}
-
-function normalizeMirrorBaseUrl(value) {
-  const input = String(value || "").trim() || DEFAULT_MIRROR;
-  const probe = input
-    .replaceAll("{id}", "example-id")
-    .replaceAll("{url}", "https%3A%2F%2Fmedium.com%2Fexample-id");
-  const url = new URL(probe);
-  if (!["https:", "http:"].includes(url.protocol)) {
-    throw new Error("Mirror URL must use http or https.");
-  }
-  const invalidToken = input.match(/\{(?!id\}|url\})[^}]*\}/);
-  if (invalidToken) {
-    throw new Error("Only {id} and {url} placeholders are supported.");
-  }
-  if (input.includes("{") || input.includes("}")) {
-    return input;
-  }
-  return url.toString();
 }
 
 function toOriginPattern(hostname) {
@@ -152,70 +120,27 @@ function createPresetItem(publication) {
   return item;
 }
 
-function createCustomDomainItem(hostname) {
-  const item = document.createElement("article");
-  item.className = "domain-item";
-
-  const main = document.createElement("div");
-  main.className = "domain-main";
-
-  const label = document.createElement("div");
-  label.className = "domain-label";
-  label.textContent = hostname;
-
-  const meta = document.createElement("div");
-  meta.className = "domain-meta";
-  meta.textContent = originGranted(hostname) ? "Permission granted" : "Missing permission";
-
-  main.append(label, meta);
-
-  const button = document.createElement("button");
-  button.className = "remove-button";
-  button.type = "button";
-  button.textContent = "Remove";
-  button.addEventListener("click", async () => {
-    button.disabled = true;
-    try {
-      const nextDomains = (appState.settings.customDomains || []).filter((domain) => domain !== hostname);
-      await saveSettings({ customDomains: nextDomains });
-        if ((appState.grantedOrigins || []).includes(toOriginPattern(hostname))) {
-          await browser.permissions.remove({ origins: [toOriginPattern(hostname)] });
-      }
-      setFeedback(`Removed ${hostname}.`, "success");
-    } catch (error) {
-      setFeedback(error.message, "error");
-    } finally {
-      button.disabled = false;
-    }
-  });
-
-  item.append(main, button);
-  return item;
-}
-
 function render() {
   if (!appState.settings) {
     return;
   }
 
+  setControlsDisabled(false);
   updateStatus();
-  elements.mirrorInput.value = appState.settings.mirrorTemplate || appState.settings.mirrorBaseUrl || DEFAULT_MIRROR;
+  elements.mirrorInput.value = appState.settings.mirrorTemplate || DEFAULT_MIRROR;
 
   elements.presetList.replaceChildren(
     ...appState.builtinPublications.map((publication) => createPresetItem(publication))
   );
+}
 
-  const customDomains = appState.settings.customDomains || [];
-  if (!customDomains.length) {
-    const empty = document.createElement("p");
-    empty.className = "domain-meta";
-    empty.textContent = "No custom domains yet.";
-    elements.customDomainList.replaceChildren(empty);
-  } else {
-    elements.customDomainList.replaceChildren(
-      ...customDomains.map((hostname) => createCustomDomainItem(hostname))
-    );
-  }
+function renderStartupError(message) {
+  setControlsDisabled(true);
+  elements.statusBadge.textContent = "Unavailable";
+  elements.statusBadge.classList.remove("is-on");
+  elements.statusCopy.textContent = "The popup could not load extension state.";
+  elements.presetList.replaceChildren();
+  setFeedback(message, "error");
 }
 
 async function refreshState() {
@@ -243,7 +168,7 @@ elements.toggleButton.addEventListener("click", async () => {
 
 elements.saveMirrorButton.addEventListener("click", async () => {
   try {
-    const mirrorTemplate = normalizeMirrorBaseUrl(elements.mirrorInput.value);
+    const mirrorTemplate = normalizeMirrorTemplate(elements.mirrorInput.value);
     await saveSettings({ mirrorTemplate });
     setFeedback("Mirror setting updated.", "success");
   } catch (error) {
@@ -251,36 +176,6 @@ elements.saveMirrorButton.addEventListener("click", async () => {
   }
 });
 
-elements.addDomainButton.addEventListener("click", async () => {
-  try {
-    const hostname = normalizeDomainEntry(elements.customDomainInput.value);
-    const allDomains = new Set([
-      ...(appState.settings.customDomains || []),
-      ...(appState.settings.enabledPresetDomains || []),
-      "medium.com"
-    ]);
-    if (allDomains.has(hostname)) {
-      throw new Error("That domain is already enabled or built in.");
-    }
-
-    if (!originGranted(hostname)) {
-      const allowed = await browser.permissions.request({
-        origins: [toOriginPattern(hostname)]
-      });
-      if (!allowed) {
-        throw new Error(`Permission denied for ${hostname}.`);
-      }
-    }
-
-    const customDomains = Array.from(new Set([...(appState.settings.customDomains || []), hostname])).sort();
-    await saveSettings({ customDomains });
-    elements.customDomainInput.value = "";
-    setFeedback(`Added ${hostname}.`, "success");
-  } catch (error) {
-    setFeedback(error.message, "error");
-  }
-});
-
 refreshState().catch((error) => {
-  setFeedback(error.message, "error");
+  renderStartupError(error.message);
 });

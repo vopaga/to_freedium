@@ -12,10 +12,11 @@
     "*://*.medium.com/*"
   ],
   "optional_host_permissions": [
-    "*://*/*"
-  ],
-  "optional_permissions": [
-    "*://*/*"
+    "*://towardsdatascience.com/*",
+    "*://betterprogramming.pub/*",
+    "*://uxdesign.cc/*",
+    "*://levelup.gitconnected.com/*",
+    "*://betterhumans.pub/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -51,13 +52,17 @@
       "matches": [
         "*://medium.com/*",
         "*://*.medium.com/*",
-        "*://*/*"
+        "*://towardsdatascience.com/*",
+        "*://betterprogramming.pub/*",
+        "*://uxdesign.cc/*",
+        "*://levelup.gitconnected.com/*",
+        "*://betterhumans.pub/*"
       ]
     }
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "to-freedium@alexa.local",
+      "id": "{3f1bbfd0-9fe5-4d80-9c4f-19c89f6ee7b2}",
       "strict_min_version": "128.0"
     }
   }

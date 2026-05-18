@@ -4,9 +4,54 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Redirecting…</title>
+  <style>
+    body {
+      font: 16px/1.5 Georgia, "Times New Roman", serif;
+      margin: 0;
+      padding: 24px;
+      background: #f6f1e5;
+      color: #1f2b23;
+    }
+
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #fffdf8;
+      border: 1px solid rgba(31, 43, 35, 0.14);
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    a {
+      color: #165d45;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error {
+      color: #9f3a26;
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting…</p>
+  <main>
+    <h1 id="title">Redirecting…</h1>
+    <p id="message">Opening the configured mirror for this article.</p>
+    <p id="error" class="error hidden"></p>
+    <p id="fallback" class="hidden">If nothing happens, <a id="original-link" href="#">open the original article</a>.</p>
+  </main>
+  <script src="mirror-template.js"></script>
   <script src="redirect.js"></script>
 </body>
 </html>
