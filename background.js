@@ -81,6 +81,10 @@ function getBuiltinPublicationHosts() {
   return BUILTIN_PUBLICATIONS.map((entry) => entry.host);
 }
 
+function getOptionalPublicationHosts() {
+  return getBuiltinPublicationHosts().filter((host) => host !== "medium.com" && !host.endsWith(".medium.com"));
+}
+
 async function getStoredSettings() {
   const stored = await browser.storage.local.get(STORAGE_KEY);
   return {
@@ -165,6 +169,36 @@ async function ensureDefaults() {
   return saved;
 }
 
+async function pruneDomainsWithoutPermission(removedOrigins) {
+  if (!removedOrigins?.length) {
+    return;
+  }
+
+  const settings = await getStoredSettings();
+  const shouldRemoveDomain = (hostname) => removedOrigins.includes(toOriginPattern(hostname));
+
+  const nextCustomDomains = settings.customDomains.filter((hostname) => !shouldRemoveDomain(hostname));
+  const nextPresetDomains = settings.enabledPresetDomains.filter((hostname) => {
+    if (!getOptionalPublicationHosts().includes(hostname)) {
+      return true;
+    }
+    return !shouldRemoveDomain(hostname);
+  });
+
+  if (
+    nextCustomDomains.length === settings.customDomains.length &&
+    nextPresetDomains.length === settings.enabledPresetDomains.length
+  ) {
+    return;
+  }
+
+  await saveSettings({
+    ...settings,
+    customDomains: nextCustomDomains,
+    enabledPresetDomains: nextPresetDomains,
+  });
+}
+
 browser.runtime.onInstalled.addListener(() => {
   ensureDefaults().catch((error) => {
     console.error("Failed to initialize extension", error);
@@ -183,6 +217,12 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   }
   syncDynamicRules(changes[STORAGE_KEY].newValue).catch((error) => {
     console.error("Failed to update rules after storage change", error);
+  });
+});
+
+browser.permissions.onRemoved.addListener((permissions) => {
+  pruneDomainsWithoutPermission(permissions.origins || []).catch((error) => {
+    console.error("Failed to prune revoked domains", error);
   });
 });
 

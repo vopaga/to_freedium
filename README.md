@@ -44,3 +44,5 @@ The extension does not inject content scripts, does not use `webRequest`, and do
 - Submit it through the Firefox Add-ons Developer Hub as a listed add-on if you want official catalog distribution.
 - In reviewer notes, explain that the extension only redirects top-level navigations, stores settings locally, and requests additional domain access only on user action.
 - The manifest includes a minimal static DNR ruleset file as a compatibility workaround for Firefox versions where dynamic rules may not restore reliably after restart.
+- Use [AMO_SUBMISSION.md](AMO_SUBMISSION.md) for listing text and reviewer notes.
+- Use [PRIVACY.md](PRIVACY.md) as a starting point if you decide to publish a privacy statement with the add-on.
