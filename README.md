@@ -11,6 +11,8 @@
 </p>
 
 <p align="center">
+  <a href="https://addons.mozilla.org/firefox/addon/to-freedium/"><img alt="Mozilla Add-on version" src="https://img.shields.io/amo/v/to-freedium?style=flat-square&color=165d45&label=Mozilla%20Add-on"></a>
+  <a href="https://addons.mozilla.org/firefox/addon/to-freedium/"><img alt="Mozilla Add-on users" src="https://img.shields.io/amo/users/to-freedium?style=flat-square&color=165d45&label=users"></a>
   <a href="https://github.com/vopaga/to_freedium/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/vopaga/to_freedium?style=flat-square&color=165d45&label=release"></a>
   <a href="https://github.com/vopaga/to_freedium/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/vopaga/to_freedium/ci.yml?branch=main&style=flat-square&label=ci"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-GPL--3.0-165d45?style=flat-square"></a>
@@ -26,8 +28,6 @@
 Install in one click on Firefox desktop and Android:
 
 https://addons.mozilla.org/firefox/addon/to-freedium/
-
-While the latest version is in Mozilla's review queue the page shows "Awaiting Review". The install button becomes active once review passes.
 
 ### From GitHub Releases
 
